@@ -1,0 +1,15 @@
+# Build artifacts
+.pio/
+.build/
+build/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+

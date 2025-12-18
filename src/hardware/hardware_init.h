@@ -1,0 +1,62 @@
+#include <Arduino.h>
+#include "config/pin_config.h"
+#include "motion/stepper_motor.h"
+
+class HardwareInit {
+  public:
+  void initPins() {
+      pinMode(ESTOP_PIN, INPUT_PULLUP);
+      pinMode(SR_DATA_PIN, OUTPUT);
+      pinMode(SR_CLOCK_PIN, OUTPUT);
+      pinMode(SR_LATCH_PIN, OUTPUT);
+  }
+
+  void sendSerialBits(int value){
+    for (int i = 11; i < 32; i++) {
+      digitalWrite(SR_DATA_PIN, (value & (1 << i)) > 0 );
+      // Serial.print((value & (1 << i)) > 0);
+      digitalWrite(SR_CLOCK_PIN, HIGH);
+      // delayMicroseconds(30);
+      digitalWrite(SR_CLOCK_PIN, LOW);
+    }
+    // Serial.println();
+    digitalWrite(SR_LATCH_PIN, HIGH);
+    digitalWrite(SR_LATCH_PIN, LOW);
+  }
+
+  MotionController initMotors_getMotionController(){
+    //M2: MS1,MS2,MS3,EN: 0100
+    //M1: MS1,MS2,MS3,EN: 0100
+    //M4: MS1,MS2,MS3,EN: 0100
+    //M3: MS1,MS2,MS3,EN: 0100
+    //M5: MS3,EN,MS1,MS2: 0001
+    //M6: EN: 0
+    //0b01000100010001000001000000000000 - enable motors
+    //0b01010101010101010101000000000000 - disable motors
+    sendSerialBits(0b01000100010001000001000000000000);
+
+    StepperMotor motor1(STEPPER_PINS[0].step,STEPPER_PINS[0].dir,STEPS_PER_REV, GEAR_RATIOS[0]);
+    StepperMotor motor2(STEPPER_PINS[1].step,STEPPER_PINS[1].dir,STEPS_PER_REV, GEAR_RATIOS[1]);
+    StepperMotor motor3(STEPPER_PINS[2].step,STEPPER_PINS[2].dir,STEPS_PER_REV, GEAR_RATIOS[2]);
+    StepperMotor motor4(STEPPER_PINS[3].step,STEPPER_PINS[3].dir,STEPS_PER_REV, GEAR_RATIOS[3]);
+    StepperMotor motor5(STEPPER_PINS[4].step,STEPPER_PINS[4].dir,STEPS_PER_REV, GEAR_RATIOS[4]);
+    StepperMotor motor6(STEPPER_PINS[5].step,STEPPER_PINS[5].dir,STEPS_PER_REV, GEAR_RATIOS[5]);
+
+    StepperMotor* motors[6] = {
+      &motor1,
+      &motor2,
+      &motor3,
+      &motor4,
+      &motor5,
+      &motor6
+    };
+
+    MotionController motion(motors);
+    return motion;
+  }
+
+  void disableMotors(){
+      sendSerialBits(0b01010101010101010101000000000000);
+  }
+
+};
