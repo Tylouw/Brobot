@@ -1,9 +1,24 @@
 #include <Arduino.h>
 #include "config/pin_config.h"
 #include "motion/stepper_motor.h"
+#include "motion/motion_controller.h"
 
 class HardwareInit {
   public:
+  HardwareInit()
+  : motors_{
+      StepperMotor(STEPPER_PINS[0].step, STEPPER_PINS[0].dir, STEPS_PER_REV, GEAR_RATIOS[0]),
+      StepperMotor(STEPPER_PINS[1].step, STEPPER_PINS[1].dir, STEPS_PER_REV, GEAR_RATIOS[1]),
+      StepperMotor(STEPPER_PINS[2].step, STEPPER_PINS[2].dir, STEPS_PER_REV, GEAR_RATIOS[2]),
+      StepperMotor(STEPPER_PINS[3].step, STEPPER_PINS[3].dir, STEPS_PER_REV, GEAR_RATIOS[3]),
+      StepperMotor(STEPPER_PINS[4].step, STEPPER_PINS[4].dir, STEPS_PER_REV, GEAR_RATIOS[4]),
+      StepperMotor(STEPPER_PINS[5].step, STEPPER_PINS[5].dir, STEPS_PER_REV, GEAR_RATIOS[5])
+    }
+  {
+    for (int i = 0; i < MOTOR_COUNT; ++i) {
+      motorPtrs_[i] = &motors_[i];
+    }
+  }
   void initPins() {
       pinMode(ESTOP_PIN, INPUT_PULLUP);
       pinMode(SR_DATA_PIN, OUTPUT);
@@ -24,7 +39,7 @@ class HardwareInit {
     digitalWrite(SR_LATCH_PIN, LOW);
   }
 
-  MotionController initMotors_getMotionController(){
+  MotionController* initMotors_getMotionController(){
     //M2: MS1,MS2,MS3,EN: 0100
     //M1: MS1,MS2,MS3,EN: 0100
     //M4: MS1,MS2,MS3,EN: 0100
@@ -35,28 +50,16 @@ class HardwareInit {
     //0b01010101010101010101000000000000 - disable motors
     sendSerialBits(0b01000100010001000001000000000000);
 
-    StepperMotor motor1(STEPPER_PINS[0].step,STEPPER_PINS[0].dir,STEPS_PER_REV, GEAR_RATIOS[0]);
-    StepperMotor motor2(STEPPER_PINS[1].step,STEPPER_PINS[1].dir,STEPS_PER_REV, GEAR_RATIOS[1]);
-    StepperMotor motor3(STEPPER_PINS[2].step,STEPPER_PINS[2].dir,STEPS_PER_REV, GEAR_RATIOS[2]);
-    StepperMotor motor4(STEPPER_PINS[3].step,STEPPER_PINS[3].dir,STEPS_PER_REV, GEAR_RATIOS[3]);
-    StepperMotor motor5(STEPPER_PINS[4].step,STEPPER_PINS[4].dir,STEPS_PER_REV, GEAR_RATIOS[4]);
-    StepperMotor motor6(STEPPER_PINS[5].step,STEPPER_PINS[5].dir,STEPS_PER_REV, GEAR_RATIOS[5]);
-
-    StepperMotor* motors[6] = {
-      &motor1,
-      &motor2,
-      &motor3,
-      &motor4,
-      &motor5,
-      &motor6
-    };
-
-    MotionController motion(motors);
+    MotionController* motion = new MotionController(motorPtrs_);
     return motion;
   }
 
   void disableMotors(){
       sendSerialBits(0b01010101010101010101000000000000);
   }
+
+  private:
+  StepperMotor motors_[MOTOR_COUNT];
+  StepperMotor* motorPtrs_[MOTOR_COUNT];
 
 };

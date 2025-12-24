@@ -50,12 +50,12 @@ void MotionController::getJointAnglesDeg(float outDeg[6]) const {
    Motor order:  M1 M2 M3 M4 M5 M6
    ===================================================== */
 void MotionController::jointsToMotorsRad(const float q[6], float m[6]) {
-    const float q1 = q[0];
-    const float q2 = q[1];
-    const float q3 = q[2];
-    const float q4 = q[3];
-    const float q5 = q[4];
-    const float q6 = q[5];
+    const float q1 = -q[0];
+    const float q2 = -q[1];
+    const float q3 = -q[2];
+    const float q4 = -q[3];
+    const float q5 = -q[4];
+    const float q6 = -q[5];
 
     // Wrist coupling
     m[0] = (-1.0f * q4) + (1.0f * q5) + (-2.0f * q6);
