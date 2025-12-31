@@ -50,7 +50,7 @@ constexpr float GEAR_RATIOS[MOTOR_COUNT] = {
     6.0f,
     6.0f,
     6.0f,
-    (56.0f / 16.0f) * (120.0f / 23.0f),
+    (56.0f / 20.0f) * (120.0f / 23.0f),
     42.0f,
-    192.0f / 16.0f
+    192.0f / 20.0f
 };

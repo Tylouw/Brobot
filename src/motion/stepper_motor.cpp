@@ -2,21 +2,24 @@
 #include "stepper_motor.h"
 #include "config/pin_config.h"
 
-StepperMotor::StepperMotor(uint8_t stepPin, uint8_t dirPin, int stepsPerRev, float gearratio)
-: driver(stepPin, dirPin),
+StepperMotor::StepperMotor(uint8_t stepPin, uint8_t dirPin, bool reversed, int stepsPerRev, float gearratio)
+: driver(stepPin, dirPin, reversed),
   timing(),
   stepPosition(0),
+  directionPositive(true),
   stepsPerUnit(stepsPerRev * gearratio / (2.0f * M_PI)),
   stepHighStartMicros(0)
 {}
 
 void StepperMotor::move(float distanceUnits, float velocityUnits, float accelUnits)
 {
-    int32_t steps = (int32_t)(fabsf(distanceUnits) * stepsPerUnit);
+    int32_t steps = (int32_t)lroundf(fabsf(distanceUnits) * stepsPerUnit);
     float velSteps = fabsf(velocityUnits) * stepsPerUnit;
     float accSteps = fabsf(accelUnits) * stepsPerUnit;
 
-    driver.setDirection(distanceUnits >= 0.0f);
+    const bool dir = distanceUnits >= 0.0f;
+    driver.setDirection(dir);
+    directionPositive = dir;
     timing.planMove(steps, velSteps, accSteps);
 }
 
@@ -25,7 +28,9 @@ void StepperMotor::jog(float velocityUnits,float accelUnits)
     float velSteps = velocityUnits * stepsPerUnit;
     float accSteps = fabsf(accelUnits) * stepsPerUnit;
 
-    driver.setDirection(velSteps >= 0.0f);
+    const bool dir = velSteps >= 0.0f;
+    driver.setDirection(dir);
+    directionPositive = dir;
     timing.startJog(velSteps, accSteps);
 }
 
@@ -51,11 +56,7 @@ void StepperMotor::update()
         driver.beginStep();
         stepHighStartMicros = now;
 
-        if (timing.currentVelocity() >= 0.0f) {
-            stepPosition++;
-        } else {
-            stepPosition--;
-        }
+        stepPosition += directionPositive ? 1 : -1;
     }
 }
 
@@ -63,6 +64,11 @@ void StepperMotor::update()
 float StepperMotor::positionUnits() const
 {
     return (float)stepPosition / stepsPerUnit;
+}
+
+int64_t StepperMotor::positionSteps() const
+{
+    return stepPosition;
 }
 
 

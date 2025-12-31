@@ -1,7 +1,7 @@
 #include "stepper_driver.h"
 
-StepperDriver::StepperDriver(uint8_t step, uint8_t dir)
-: stepPin(step), dirPin(dir), stepIsHigh(false)
+StepperDriver::StepperDriver(uint8_t step, uint8_t dir, bool reversed)
+: stepPin(step), dirPin(dir), stepIsHigh(false), isReversed(reversed)
 {
     pinMode(stepPin, OUTPUT);
     pinMode(dirPin, OUTPUT);
@@ -10,6 +10,7 @@ StepperDriver::StepperDriver(uint8_t step, uint8_t dir)
 
 void StepperDriver::setDirection(bool dir)
 {
+    if (isReversed) dir = !dir;
     digitalWrite(dirPin, dir ? HIGH : LOW);
 }
 

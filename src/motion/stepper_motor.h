@@ -6,6 +6,7 @@ class StepperMotor {
 public:
     StepperMotor(uint8_t stepPin,
                  uint8_t dirPin,
+                 bool reversed,
                  int stepsPerRev,
                  float gearratio);
 
@@ -22,12 +23,14 @@ public:
     void update();
     bool isRunning() const;
     float positionUnits() const;
+    int64_t positionSteps() const;
 
 private:
     StepperDriver driver;
     StepperMotionTiming timing;
     int64_t stepPosition;
     int stepsPerUnit;
+    bool directionPositive;
     uint32_t stepHighStartMicros;
-    static constexpr uint32_t STEP_PULSE_US = 3;
+    static constexpr uint32_t STEP_PULSE_US = 5;
 };

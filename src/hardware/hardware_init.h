@@ -7,12 +7,12 @@ class HardwareInit {
   public:
   HardwareInit()
   : motors_{
-      StepperMotor(STEPPER_PINS[0].step, STEPPER_PINS[0].dir, STEPS_PER_REV, GEAR_RATIOS[0]),
-      StepperMotor(STEPPER_PINS[1].step, STEPPER_PINS[1].dir, STEPS_PER_REV, GEAR_RATIOS[1]),
-      StepperMotor(STEPPER_PINS[2].step, STEPPER_PINS[2].dir, STEPS_PER_REV, GEAR_RATIOS[2]),
-      StepperMotor(STEPPER_PINS[3].step, STEPPER_PINS[3].dir, STEPS_PER_REV, GEAR_RATIOS[3]),
-      StepperMotor(STEPPER_PINS[4].step, STEPPER_PINS[4].dir, STEPS_PER_REV, GEAR_RATIOS[4]),
-      StepperMotor(STEPPER_PINS[5].step, STEPPER_PINS[5].dir, STEPS_PER_REV, GEAR_RATIOS[5])
+      StepperMotor(STEPPER_PINS[0].step, STEPPER_PINS[0].dir, true, STEPS_PER_REV, GEAR_RATIOS[0]), // A4/A5/A6 coupling
+      StepperMotor(STEPPER_PINS[1].step, STEPPER_PINS[1].dir, true, STEPS_PER_REV, GEAR_RATIOS[1]), // A4/A5/A6 coupling
+      StepperMotor(STEPPER_PINS[2].step, STEPPER_PINS[2].dir, true, STEPS_PER_REV, GEAR_RATIOS[2]), // A4 normal
+      StepperMotor(STEPPER_PINS[3].step, STEPPER_PINS[3].dir, true, STEPS_PER_REV, GEAR_RATIOS[3]), // A3 normal
+      StepperMotor(STEPPER_PINS[4].step, STEPPER_PINS[4].dir, true, STEPS_PER_REV, GEAR_RATIOS[4]), // A2 normal
+      StepperMotor(STEPPER_PINS[5].step, STEPPER_PINS[5].dir, true, STEPS_PER_REV, GEAR_RATIOS[5]) // A1 reversed
     }
   {
     for (int i = 0; i < MOTOR_COUNT; ++i) {

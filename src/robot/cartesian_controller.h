@@ -55,7 +55,7 @@ private:
 
     void refreshStateFromMotion();
     void updateFK();
-    void computeJogJointVel(const CartesianVelocity& cmd, float out_qdot[6]) const;
+    void computeJogJointVelTCP(const CartesianVelocity& cmd, float out_qdot[6]) const;
 
     static bool solve6x6(float A[6][6], const float b[6], float x[6]);
 

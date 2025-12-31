@@ -3,7 +3,7 @@
 
 class StepperDriver {
 public:
-    StepperDriver(uint8_t stepPin, uint8_t dirPin);
+    StepperDriver(uint8_t stepPin, uint8_t dirPin, bool isReversed);
 
     void setDirection(bool dir);
 
@@ -19,4 +19,5 @@ private:
     uint8_t stepPin;
     uint8_t dirPin;
     bool stepIsHigh;
+    bool isReversed;
 };

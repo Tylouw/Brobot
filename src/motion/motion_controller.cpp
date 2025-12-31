@@ -68,12 +68,12 @@ void MotionController::getJointAnglesDeg(float outDeg[6]) const {
 void MotionController::jointsToMotorsRad(const float q[6], float m[6]) {
     // IMPORTANT: Keep your existing sign convention.
     // These negations are part of your project-wide direction convention.
-    const float q1 = -q[0];
-    const float q2 = -q[1];
-    const float q3 = -q[2];
-    const float q4 = -q[3];
-    const float q5 = -q[4];
-    const float q6 = -q[5];
+    const float q1 = q[0];
+    const float q2 = q[1];
+    const float q3 = q[2];
+    const float q4 = q[3];
+    const float q5 = q[4];
+    const float q6 = q[5];
 
     // Wrist coupling
     m[0] = (-1.0f * q4) + (1.0f * q5) + (-2.0f * q6);
@@ -112,12 +112,12 @@ void MotionController::motorsToJointsRad(const float m[6], float q[6]) {
     const float q1 = m[5];
 
     // Now undo the earlier negation convention:
-    q[0] = -q1; // A1
-    q[1] = -q2; // A2
-    q[2] = -q3; // A3
-    q[3] = -q4; // A4
-    q[4] = -q5; // A5
-    q[5] = -q6; // A6
+    q[0] = q1; // A1
+    q[1] = q2; // A2
+    q[2] = q3; // A3
+    q[3] = q4; // A4
+    q[4] = q5; // A5
+    q[5] = q6; // A6
 }
 
 /* ===========================
@@ -179,6 +179,10 @@ void MotionController::moveJointsRad(const float targetRad[6],
     float deltaMotorRad[6];
     for (int i = 0; i < 6; ++i) {
         deltaMotorRad[i] = targetMotorRad[i] - motorRad_[i];
+        Serial.print("Delta motor ");
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.println(deltaMotorRad[i]);
     }
 
     // Sync: scale so longest motor move reaches maxVelRad
@@ -229,4 +233,22 @@ void MotionController::setJogJointVelRad(const float jointVelRad[6],
 
 void MotionController::stopJog() {
     for (int i = 0; i < 6; ++i) motors_[i]->stopJog();
+}
+
+void MotionController::printMotorPositions() const {
+    Serial.print("Motor positions (rad):");
+    for (int i = 0; i < 6; ++i) {
+        Serial.print(motors_[i]->positionUnits());
+        Serial.print(" ");
+    }
+    Serial.println();
+}
+
+void MotionController::printMotorSteps() const {
+    Serial.print("Motor positions (steps):");
+    for (int i = 0; i < 6; ++i) {
+        Serial.print(motors_[i]->positionSteps());
+        Serial.print(" ");
+    }
+    Serial.println();
 }

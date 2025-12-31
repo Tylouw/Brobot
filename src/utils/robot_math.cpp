@@ -77,12 +77,11 @@ Mat3 so3_exp(const Vec3& r) {
 Vec3 so3_log(const Mat3& R) {
     const float tr = R.m[0][0] + R.m[1][1] + R.m[2][2];
     float cos_theta = 0.5f * (tr - 1.0f);
-
-    if (cos_theta >  1.0f) cos_theta =  1.0f;
-    if (cos_theta < -1.0f) cos_theta = -1.0f;
+    cos_theta = fmaxf(-1.0f, fminf(1.0f, cos_theta));
 
     const float theta = acosf(cos_theta);
 
+    // Small angle: use first-order
     if (theta < 1e-6f) {
         return {
             0.5f * (R.m[2][1] - R.m[1][2]),
@@ -91,9 +90,37 @@ Vec3 so3_log(const Mat3& R) {
         };
     }
 
+    // Near 180°: use diagonal-based axis extraction
+    if (M_PI - theta < 1e-3f) {
+        float x2 = fmaxf(0.0f, (R.m[0][0] + 1.0f) * 0.5f);
+        float y2 = fmaxf(0.0f, (R.m[1][1] + 1.0f) * 0.5f);
+        float z2 = fmaxf(0.0f, (R.m[2][2] + 1.0f) * 0.5f);
+
+        Vec3 axis{};
+        if (x2 >= y2 && x2 >= z2) {
+            axis.x = sqrtf(x2);
+            axis.y = (R.m[0][1] + R.m[1][0]) / (4.0f * axis.x + 1e-9f);
+            axis.z = (R.m[0][2] + R.m[2][0]) / (4.0f * axis.x + 1e-9f);
+        } else if (y2 >= z2) {
+            axis.y = sqrtf(y2);
+            axis.x = (R.m[0][1] + R.m[1][0]) / (4.0f * axis.y + 1e-9f);
+            axis.z = (R.m[1][2] + R.m[2][1]) / (4.0f * axis.y + 1e-9f);
+        } else {
+            axis.z = sqrtf(z2);
+            axis.x = (R.m[0][2] + R.m[2][0]) / (4.0f * axis.z + 1e-9f);
+            axis.y = (R.m[1][2] + R.m[2][1]) / (4.0f * axis.z + 1e-9f);
+        }
+        // Normalize in case of numeric noise
+        const float n = vec3_norm(axis);
+        if (n > 1e-6f) {
+            axis = vec3_scale(axis, 1.0f / n);
+        }
+        return vec3_scale(axis, theta);
+    }
+
+    // General case
     const float denom = 2.0f * sinf(theta);
     const float k = theta / denom;
-
     return {
         k * (R.m[2][1] - R.m[1][2]),
         k * (R.m[0][2] - R.m[2][0]),

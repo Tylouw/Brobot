@@ -55,6 +55,11 @@ public:
     /* ===== State access (derived from motors) ===== */
     void getJointAnglesRad(float outRad[6]) const;
     void getJointAnglesDeg(float outDeg[6]) const;
+    static void jointsToMotorsRad(const float q[6], float m[6]);
+    static void motorsToJointsRad(const float m[6], float q[6]);
+
+    void printMotorPositions() const;
+    void printMotorSteps() const;
 
 private:
     StepperMotor* motors_[6];
@@ -75,8 +80,6 @@ private:
        Motor order:  M1 M2 M3 M4 M5 M6   (m)
        All in radians.
     */
-    static void jointsToMotorsRad(const float q[6], float m[6]);
-    static void motorsToJointsRad(const float m[6], float q[6]);
 
     // Refresh motorRad_ and jointRad_ from StepperMotor positions
     void refreshStateFromMotors_(float dt);

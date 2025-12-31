@@ -14,7 +14,7 @@ CartesianController::CartesianController(MotionController* motion)
   lambda_(0.02f)
 {
     T_flange_tcp_.R = mat3_identity();
-    T_flange_tcp_.p = {0.0f, 0.0f, 0.0f};
+    T_flange_tcp_.p = {0.0f, 0.0f, 0.1f};
     tcpPose_ = {};
 
     if (motion_) {
@@ -39,7 +39,7 @@ void CartesianController::update() {
     // If jogging active, compute qdot and send it every cycle
     if (jogActive_) {
         float qdot[6] = {0};
-        computeJogJointVel(jogCmd_, qdot);
+        computeJogJointVelTCP(jogCmd_, qdot);
 
         for (int i = 0; i < 6; ++i) state_.q_dot.q[i] = qdot[i];
 
@@ -58,7 +58,26 @@ bool CartesianController::moveToPose(const Pose& target_m,
 
     // Analytical IK
     Pose T_base_flange_target = pose_mul(target_m, pose_inv(T_flange_tcp_)); //adjust for tcp
+    Serial.print("desired Ik pose: ");
+    Serial.print(T_base_flange_target.p.x); Serial.print(",");
+    Serial.print(T_base_flange_target.p.y); Serial.print(",");
+    Serial.print(T_base_flange_target.p.z); Serial.println(" rotmat: ");
+    //print the pure matrix
+    Serial.print(T_base_flange_target.R.m[0][0]); Serial.print(",");
+    Serial.print(T_base_flange_target.R.m[0][1]); Serial.print(",");
+    Serial.print(T_base_flange_target.R.m[0][2]); Serial.println();
+    Serial.print(T_base_flange_target.R.m[1][0]); Serial.print(",");
+    Serial.print(T_base_flange_target.R.m[1][1]); Serial.print(",");
+    Serial.print(T_base_flange_target.R.m[1][2]); Serial.println();
+    Serial.print(T_base_flange_target.R.m[2][0]); Serial.print(",");
+    Serial.print(T_base_flange_target.R.m[2][1]); Serial.print(",");
+    Serial.print(T_base_flange_target.R.m[2][2]); Serial.println();
     JointVector sol = ik6(T_base_flange_target);
+    Serial.print("IK solution rad: ");
+    for (int i = 0; i < 6; ++i) {
+        Serial.print(sol.q[i]);
+        Serial.print(i < 5 ? "," : "\n");
+    }
 
     motion_->moveJointsRad(sol.q, maxVelRad, accelRad);
     return true;
@@ -95,7 +114,7 @@ void CartesianController::updateFK() {
 
 }
 
-void CartesianController::computeJogJointVel(const CartesianVelocity& cmd_tcp,
+void CartesianController::computeJogJointVelTCP(const CartesianVelocity& cmd_tcp,
                                              float out_qdot[6]) const
 {
     Pose ee{};
